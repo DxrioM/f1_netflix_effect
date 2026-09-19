@@ -1,0 +1,140 @@
+{
+  "us_viewership_serie": [
+    {
+      "year": 2018,
+      "viewers": 554000,
+      "es_estimado": 0,
+      "yoy_growth_pct": null
+    },
+    {
+      "year": 2019,
+      "viewers": 672000,
+      "es_estimado": 0,
+      "yoy_growth_pct": 21.2996389892
+    },
+    {
+      "year": 2020,
+      "viewers": 598700,
+      "es_estimado": 1,
+      "yoy_growth_pct": -10.9077380952
+    },
+    {
+      "year": 2021,
+      "viewers": 934000,
+      "es_estimado": 0,
+      "yoy_growth_pct": 56.0046767997
+    },
+    {
+      "year": 2022,
+      "viewers": 1200000,
+      "es_estimado": 0,
+      "yoy_growth_pct": 28.4796573876
+    },
+    {
+      "year": 2023,
+      "viewers": 1160000,
+      "es_estimado": 0,
+      "yoy_growth_pct": -3.3333333333
+    },
+    {
+      "year": 2024,
+      "viewers": 1130000,
+      "es_estimado": 0,
+      "yoy_growth_pct": -2.5862068966
+    }
+  ],
+  "global_tv_serie": [
+    {
+      "year": 2020,
+      "billones": 1.49,
+      "es_estimado": 1
+    },
+    {
+      "year": 2021,
+      "billones": 1.55,
+      "es_estimado": 0
+    },
+    {
+      "year": 2022,
+      "billones": 1.54,
+      "es_estimado": 0
+    },
+    {
+      "year": 2024,
+      "billones": 1.6,
+      "es_estimado": 0
+    }
+  ],
+  "attendance_serie": [
+    {
+      "year": 2019,
+      "millones": 4.2
+    },
+    {
+      "year": 2022,
+      "millones": 5.7
+    },
+    {
+      "year": 2023,
+      "millones": 6.0
+    },
+    {
+      "year": 2024,
+      "millones": 6.5
+    },
+    {
+      "year": 2025,
+      "millones": 6.7
+    }
+  ],
+  "social_serie": [
+    {
+      "year": 2020,
+      "millones": 35.0
+    },
+    {
+      "year": 2022,
+      "millones": 60.6
+    },
+    {
+      "year": 2024,
+      "millones": 97.0
+    }
+  ],
+  "dts_tomatometer": [
+    {
+      "temporada": 1,
+      "año": 2019,
+      "tomatometer": 92,
+      "num_reviews": 4.0
+    },
+    {
+      "temporada": 4,
+      "año": 2022,
+      "tomatometer": 22,
+      "num_reviews": 2.0
+    },
+    {
+      "temporada": 5,
+      "año": 2023,
+      "tomatometer": 83,
+      "num_reviews": null
+    },
+    {
+      "temporada": 6,
+      "año": 2024,
+      "tomatometer": 59,
+      "num_reviews": 4.0
+    }
+  ],
+  "comparativa_before_after": [
+    {
+      "us_2018": 554000,
+      "us_2024": 1130000,
+      "asistencia_2019": 4.2,
+      "asistencia_2025": 6.7,
+      "social_2020": 35.0,
+      "social_2024": 97.0
+    }
+  ]
+}

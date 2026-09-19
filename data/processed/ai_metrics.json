@@ -1,0 +1,79 @@
+{
+  "vader_correlation": {
+    "r": 0.499,
+    "p": 0.501,
+    "n": 4
+  },
+  "dts_seasons_sentiment": [
+    {
+      "temporada": 1,
+      "año": 2019,
+      "tomatometer": 92,
+      "vader_score_0_100": 46.0
+    },
+    {
+      "temporada": 4,
+      "año": 2022,
+      "tomatometer": 22,
+      "vader_score_0_100": 36.3
+    },
+    {
+      "temporada": 5,
+      "año": 2023,
+      "tomatometer": 83,
+      "vader_score_0_100": 89.7
+    },
+    {
+      "temporada": 6,
+      "año": 2024,
+      "tomatometer": 59,
+      "vader_score_0_100": 22.9
+    }
+  ],
+  "us_viewership_forecast": [
+    {
+      "year": 2025,
+      "pred": 1365540,
+      "lower": 1228686,
+      "upper": 1508164
+    },
+    {
+      "year": 2026,
+      "pred": 1483533,
+      "lower": 1343775,
+      "upper": 1608735
+    },
+    {
+      "year": 2027,
+      "pred": 1601527,
+      "lower": 1466876,
+      "upper": 1738935
+    },
+    {
+      "year": 2028,
+      "pred": 1719520,
+      "lower": 1576023,
+      "upper": 1873037
+    }
+  ],
+  "attendance_forecast": [
+    {
+      "year": 2026,
+      "pred": 7.02,
+      "lower": 6.95,
+      "upper": 7.08
+    },
+    {
+      "year": 2027,
+      "pred": 7.3,
+      "lower": 7.19,
+      "upper": 7.42
+    },
+    {
+      "year": 2028,
+      "pred": 7.59,
+      "lower": 7.38,
+      "upper": 7.82
+    }
+  ]
+}
