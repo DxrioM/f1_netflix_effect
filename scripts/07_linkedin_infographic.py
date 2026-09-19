@@ -1,11 +1,23 @@
 """
-Infografia LinkedIn — El Efecto Netflix en F1
-==================================================
-Diseño 90% visual, continuando la identidad del dashboard (asfalto
-oscuro, ambar=pre-Netflix/broadcast, cian=post-Netflix/streaming,
-franja de bandera a cuadros). El hallazgo central (Tomatometer bajo
-pero crecimiento record) se representa con tamaño de circulo, igual
-que en proyectos anteriores.
+Infografia LinkedIn — El Efecto Netflix en F1 (v2)
+========================================================
+Diseño: minimalismo tipo Apple (fondo claro, un solo acento de color,
+tipografia limpia, mucho espacio en blanco) combinado con lenguaje
+visual GENERICO de F1 (rojo de carreras, secuencia de luces de largada,
+medidores tipo velocimetro, grafico de telemetria) -- sin usar ningun
+logo, escuderia o marca especifica.
+
+Graficas nuevas (no usadas en el intento anterior):
+1. Grafico de "telemetria" (linea con relleno degradado + marcador de
+   luces de largada en 2019) como elemento signature.
+2. Medidores tipo velocimetro (3) comparando la tasa de crecimiento de
+   audiencia, asistencia y seguidores -- permite comparar de un vistazo
+   cual metrica crecio mas.
+3. Dispersion (scatter) de las 4 temporadas de Drive to Survive:
+   Tomatometer vs. crecimiento de audiencia del año siguiente -- muestra
+   el patron completo, no solo un par de puntos.
+4. Hallazgo nuevo: la meseta/caida desde el pico de 2022 (-5.8%), un
+   matiz que el diseño anterior no mencionaba.
 """
 import cairosvg
 import json
@@ -19,13 +31,19 @@ OUT = "/home/claude/f1_portfolio/assets_linkedin"
 os.makedirs(OUT, exist_ok=True)
 
 P = {
-    "bg": "#14161C", "card": "#1B1E27", "card2": "#20232E", "border": "#2A2E3A",
-    "text": "#F2F3F5", "text2": "#9BA1AE", "text3": "#656B78",
-    "broadcast": "#E8B84F", "streaming": "#3FC9E0", "good": "#4CAF6D", "bad": "#E0524A",
+    "bg": "#FFFFFF", "surface": "#F5F5F7", "border": "#D2D2D7",
+    "text": "#1D1D1F", "text2": "#6E6E73", "text3": "#98989D",
+    "red": "#E8362A", "track": "#1D1D1F", "green": "#2FA84F",
 }
 
-us_view = json.load(open(PROC.replace("data/processed/","data/processed/") + "eda_results.json", encoding="utf-8"))["us_viewership_serie"]
-ai_metrics = json.load(open(PROC + "ai_metrics.json", encoding="utf-8"))
+eda = json.load(open(PROC + "eda_results.json", encoding="utf-8"))
+ai = json.load(open(PROC + "ai_metrics.json", encoding="utf-8"))
+us_view = eda["us_viewership_serie"]
+dts_rows = ai["dts_seasons_sentiment"]
+dts_effect = json.load(open(PROC + "dts_seasons.csv".replace(".csv",".csv"), encoding="utf-8")) if False else None
+
+import pandas as pd
+dts_effect_df = pd.read_csv(PROC + "dts_effect.csv")
 
 def esc(s):
     return xml_escape(str(s))
@@ -36,188 +54,237 @@ def wrap_tspans(text, x, width, font_size, dy_mult=1.3, anchor=None):
     lines = "".join(f'<tspan x="{x}" dy="{0 if i==0 else font_size*dy_mult}"{attrs}>{ln}</tspan>' for i, ln in enumerate(wrapped))
     return lines, len(wrapped)
 
-def circle_metric(cx, cy, max_r, value_pct, color, value_label, min_r=30):
-    r = max(min_r, (value_pct/100) * max_r)
-    svg = f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="{color}" opacity="0.95"/>'
-    svg += f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="#fff" stroke-width="2" opacity="0.25"/>'
-    fsize = min(26, max(13, r*0.28))
-    svg += f'<text x="{cx}" y="{cy+fsize*0.35}" font-family="DejaVu Sans Mono" font-size="{fsize:.0f}" font-weight="bold" fill="{P["bg"]}" text-anchor="middle">{value_label}</text>'
-    return svg, r
-
-def flagstrip(x, y, w, h):
-    n = int(w // 16)
+def start_lights(x, y, r=9, gap=26, lit=5):
+    """Secuencia de luces de largada de F1 (5 circulos) -- icono generico
+    del deporte, no de ninguna marca puntual."""
     svg = ""
-    for i in range(n):
-        color = "#fff" if i % 2 == 0 else P["bg"]
-        svg += f'<rect x="{x+i*16}" y="{y}" width="16" height="{h}" fill="{color}"/>'
+    for i in range(5):
+        color = P["red"] if i < lit else P["border"]
+        svg += f'<circle cx="{x+i*gap}" cy="{y}" r="{r}" fill="{color}"/>'
+    return svg
+
+def speed_gauge(cx, cy, r, value_pct, max_val, label_lines, big_label):
+    """Medidor semicircular tipo velocimetro."""
+    start_theta = 180
+    sweep = min(180, (value_pct/max_val)*180)
+    end_theta = start_theta - sweep
+    def pt(theta):
+        rad = math.radians(theta)
+        return (cx + r*math.cos(rad), cy - r*math.sin(rad))
+    x0,y0 = pt(start_theta)
+    x1,y1 = pt(end_theta)
+    svg = f'<path d="M {x0:.1f} {y0:.1f} A {r} {r} 0 0 1 {cx+r:.1f} {cy:.1f}" fill="none" stroke="{P["surface"]}" stroke-width="14" stroke-linecap="round"/>'
+    large_arc = 1 if sweep > 180 else 0
+    svg += f'<path d="M {x0:.1f} {y0:.1f} A {r} {r} 0 {large_arc} 1 {x1:.1f} {y1:.1f}" fill="none" stroke="{P["red"]}" stroke-width="14" stroke-linecap="round"/>'
+    # aguja
+    needle_len = r*0.82
+    nx,ny = cx+needle_len*math.cos(math.radians(end_theta)), cy-needle_len*math.sin(math.radians(end_theta))
+    svg += f'<line x1="{cx}" y1="{cy}" x2="{nx:.1f}" y2="{ny:.1f}" stroke="{P["track"]}" stroke-width="2.5"/>'
+    svg += f'<circle cx="{cx}" cy="{cy}" r="5" fill="{P["track"]}"/>'
+    svg += f'<text x="{cx}" y="{cy-r-16:.0f}" font-family="DejaVu Sans Mono" font-size="26" font-weight="bold" fill="{P["text"]}" text-anchor="middle">{big_label}</text>'
+    ll, _ = wrap_tspans(label_lines, cx, 22, 11, anchor="middle")
+    svg += f'<text x="{cx}" y="{cy+28}" font-family="DejaVu Sans" font-size="11" font-weight="bold" fill="{P["text2"]}" text-anchor="middle">{ll}</text>'
     return svg
 
 def build_svg(lang):
     if lang == "es":
-        title1, title2 = "Motor: ", "Netflix"
-        subtitle = "Cómo Drive to Survive transformó a F1 en un fenómeno de marketing global"
-        header_eyebrow = "Portafolio de Data Science · Marketing + IA"
-        kpi_labels = ["Audiencia EE.UU. 2018→24", "Asistencia récord 2025", "Seguidores 2024", "Patrocinio récord 2024"]
-        kpi_vals = ["+104%", "6.7M", "97M", "$2.04B"]
-        s1_title = "El crecimiento de audiencia en EE.UU."
-        s1_sub = "Espectadores promedio por carrera (ESPN)"
-        s2_eyebrow = "El hallazgo que sorprende"
-        s2_title = "La marca ya no depende de que la serie sea buena"
-        s2_left_lbl, s2_right_lbl = "Tomatometer Temp. 4 (2022)", "Crecimiento de audiencia 2022"
-        s2_left_sub, s2_right_sub = "Una de las peores reseñas de la serie", "Año récord para F1 de todas formas"
-        s2_caption = "Comparé el Tomatometer real contra mi propio análisis de sentimiento con IA (VADER). Correlación débil y no significativa (r=0.50, n=4) — la audiencia ya creció más allá de la calidad de la serie."
-        s3_eyebrow = "Proyección con IA (Prophet)"
-        s3_title = "La tendencia sigue al alza hacia 2028"
-        record_label = "RÉCORD"
-        cta = "Explora el dashboard interactivo + código completo"
+        eyebrow = "PORTAFOLIO DE DATA SCIENCE · MARKETING + IA"
+        title1, title2 = "El motor real", "fue Netflix"
+        subtitle = "Cómo Drive to Survive transformó a la Fórmula 1 en un fenómeno de marketing global"
+        s1_label = "AUDIENCIA PROMEDIO POR CARRERA EN EE.UU. (ESPN)"
+        s1_marker = "Drive to Survive se estrena aquí"
+        s2_title = "¿Cuál métrica creció más rápido?"
+        s2_sub = "Tasa de crecimiento total de cada métrica, 2018/2019/2020 → 2024/2025"
+        g1_lbl, g1_big = "Audiencia\nEE.UU.", "+104%"
+        g2_lbl, g2_big = "Asistencia\na carreras", "+60%"
+        g3_lbl, g3_big = "Seguidores\nen redes", "+177%"
+        s3_eyebrow = "Un matiz que casi nadie menciona"
+        s3_title = "Después del pico de 2022, la audiencia en EE.UU. se estancó"
+        s3_text = "1.20M (2022) → 1.16M (2023) → 1.13M (2024) — una caída de 5.8% desde el récord. El crecimiento explosivo inicial ya se volvió una meseta madura, no una curva infinita."
+        s4_eyebrow = "¿La calidad de la serie predice el crecimiento?"
+        s4_title = "Las 4 temporadas, una al lado de la otra"
+        s4_xlabel, s4_ylabel = "Tomatometer de la temporada (%)", "Crecimiento de audiencia el año siguiente (%)"
+        s4_text = "Sin patrón claro — el punto con peor Tomatometer (Temporada 4, 22%) no tuvo el peor crecimiento posterior. La correlación real es débil y no significativa (r=0.50, n=4)."
+        s5_label = "PROYECCIÓN CON IA (PROPHET) · 2025-2028"
+        cta = "Explora el dashboard interactivo →"
         cta2 = "link en el post · ES / EN"
         footer = "Datos reales: ESPN Press Room, Formula1.com, Liberty Media Corporation, Rotten Tomatoes"
     else:
-        title1, title2 = "Engine: ", "Netflix"
-        subtitle = "How Drive to Survive turned F1 into a global marketing phenomenon"
-        header_eyebrow = "Data Science Portfolio · Marketing + AI"
-        kpi_labels = ["US Audience 2018→24", "Record 2025 Attendance", "2024 Followers", "Record 2024 Sponsorship"]
-        kpi_vals = ["+104%", "6.7M", "97M", "$2.04B"]
-        s1_title = "US audience growth"
-        s1_sub = "Average viewers per race (ESPN)"
-        s2_eyebrow = "The surprising finding"
-        s2_title = "The brand no longer depends on the show being good"
-        s2_left_lbl, s2_right_lbl = "Season 4 Tomatometer (2022)", "2022 Audience Growth"
-        s2_left_sub, s2_right_sub = "One of the show's worst reviews", "Record year for F1 anyway"
-        s2_caption = "I compared the real Tomatometer against my own AI sentiment analysis (VADER). Weak, non-significant correlation (r=0.50, n=4) — the audience has already outgrown the show's quality."
-        s3_eyebrow = "AI forecast (Prophet)"
-        s3_title = "The trend keeps climbing through 2028"
-        record_label = "RECORD"
-        cta = "Explore the interactive dashboard + full code"
+        eyebrow = "DATA SCIENCE PORTFOLIO · MARKETING + AI"
+        title1, title2 = "The real engine", "was Netflix"
+        subtitle = "How Drive to Survive turned Formula 1 into a global marketing phenomenon"
+        s1_label = "AVERAGE US AUDIENCE PER RACE (ESPN)"
+        s1_marker = "Drive to Survive premieres here"
+        s2_title = "Which metric grew the fastest?"
+        s2_sub = "Total growth rate for each metric, 2018/2019/2020 → 2024/2025"
+        g1_lbl, g1_big = "US\nAudience", "+104%"
+        g2_lbl, g2_big = "Race\nAttendance", "+60%"
+        g3_lbl, g3_big = "Social\nFollowers", "+177%"
+        s3_eyebrow = "A nuance almost no one mentions"
+        s3_title = "After the 2022 peak, US audience plateaued"
+        s3_text = "1.20M (2022) → 1.16M (2023) → 1.13M (2024) — a 5.8% drop from the record. The initial explosive growth has already matured into a plateau, not an infinite curve."
+        s4_eyebrow = "Does the show's quality predict growth?"
+        s4_title = "All 4 seasons, side by side"
+        s4_xlabel, s4_ylabel = "Season Tomatometer (%)", "Next year's audience growth (%)"
+        s4_text = "No clear pattern — the worst-reviewed season (Season 4, 22%) didn't have the worst subsequent growth. The real correlation is weak and not significant (r=0.50, n=4)."
+        s5_label = "AI FORECAST (PROPHET) · 2025-2028"
+        cta = "Explore the interactive dashboard →"
         cta2 = "link in the post · ES / EN"
         footer = "Real data: ESPN Press Room, Formula1.com, Liberty Media Corporation, Rotten Tomatoes"
 
     W = 1200
     svg_parts = [f'<rect width="{W}" height="__H__" fill="{P["bg"]}"/>']
-    svg_parts.append(flagstrip(0, 0, W, 8))
 
     # ---------- HEADER ----------
-    y = 56
-    svg_parts.append(f'<text x="70" y="{y}" font-family="DejaVu Sans Mono" font-size="13.5" font-weight="bold" fill="{P["streaming"]}">{esc(header_eyebrow)}</text>')
+    y = 64
+    svg_parts.append(f'<text x="70" y="{y}" font-family="DejaVu Sans Mono" font-size="13" font-weight="bold" letter-spacing="1.2" fill="{P["red"]}">{esc(eyebrow)}</text>')
+    y += 58
+    svg_parts.append(f'<text x="66" y="{y}" font-family="DejaVu Sans" font-size="46" font-weight="bold" fill="{P["text"]}">{esc(title1)}</text>')
     y += 54
-    svg_parts.append(f'<text x="66" y="{y}" font-family="DejaVu Sans" font-size="48" font-weight="bold" fill="{P["text"]}">{esc(title1)}</text>')
-    tw = len(title1)*29
-    svg_parts.append(f'<text x="{66+tw}" y="{y}" font-family="DejaVu Sans" font-size="48" font-weight="bold" fill="{P["streaming"]}">{esc(title2)}</text>')
-    y += 32
-    svg_parts.append(f'<text x="70" y="{y}" font-family="DejaVu Sans" font-size="16" fill="{P["text2"]}">{esc(subtitle)}</text>')
-    y += 36
+    svg_parts.append(f'<text x="66" y="{y}" font-family="DejaVu Sans" font-size="46" font-weight="bold" fill="{P["red"]}">{esc(title2)}</text>')
+    y += 34
+    sub_lines, nsub = wrap_tspans(subtitle, 70, 70, 17)
+    svg_parts.append(f'<text x="70" y="{y}" font-family="DejaVu Sans" font-size="17" fill="{P["text2"]}">{sub_lines}</text>')
+    y += nsub*17*1.3 + 40
 
-    # ---------- KPI ROW ----------
-    kpi_colors = [P["streaming"], P["broadcast"], P["broadcast"], P["good"]]
-    kpi_w = (W-140-3*14)/4
-    for i in range(4):
-        x0 = 70 + i*(kpi_w+14)
-        svg_parts.append(f'<rect x="{x0}" y="{y}" width="{kpi_w}" height="76" rx="12" fill="{P["card"]}" stroke="{P["border"]}"/>')
-        svg_parts.append(f'<text x="{x0+16}" y="{y+38}" font-family="DejaVu Sans Mono" font-size="24" font-weight="bold" fill="{kpi_colors[i]}">{esc(kpi_vals[i])}</text>')
-        lbl_lines, _ = wrap_tspans(kpi_labels[i], x0+16, 24, 10.5)
-        svg_parts.append(f'<text x="{x0+16}" y="{y+58}" font-family="DejaVu Sans" font-size="10.5" font-weight="bold" fill="{P["text2"]}">{lbl_lines}</text>')
-    y += 76 + 40
-
-    # ============ SECCION 1: CURVA DE CRECIMIENTO (protagonica) ============
-    svg_parts.append(f'<text x="70" y="{y}" font-family="DejaVu Sans" font-size="20" font-weight="bold" fill="{P["text"]}">{esc(s1_title)}</text>')
+    # ============ SECCION 1: TELEMETRIA (signature) ============
+    svg_parts.append(f'<text x="70" y="{y}" font-family="DejaVu Sans Mono" font-size="12.5" font-weight="bold" letter-spacing="1" fill="{P["text2"]}">{esc(s1_label)}</text>')
     y += 26
     s1_h = 300
-    svg_parts.append(f'<rect x="70" y="{y}" width="{W-140}" height="{s1_h}" rx="16" fill="{P["card"]}" stroke="{P["border"]}"/>')
-    svg_parts.append(f'<text x="98" y="{y+34}" font-family="DejaVu Sans" font-size="13" fill="{P["text2"]}">{esc(s1_sub)}</text>')
-    chart_x, chart_y, chart_w, chart_h = 98, y+55, W-140-56, 190
+    svg_parts.append(f'<rect x="70" y="{y}" width="{W-140}" height="{s1_h}" rx="20" fill="{P["surface"]}"/>')
+    chart_x, chart_y, chart_w, chart_h = 100, y+40, W-140-60, 175
     max_v = max(d["viewers"] for d in us_view)
+    min_v = min(d["viewers"] for d in us_view)
     n = len(us_view)
-    bar_w = chart_w / n * 0.6
-    gap = chart_w / n
-    for i, d in enumerate(us_view):
-        bh = (d["viewers"]/max_v) * chart_h
-        bx = chart_x + i*gap + (gap-bar_w)/2
-        by = chart_y + (chart_h - bh)
-        color = P["broadcast"] if d["year"] < 2019 else P["streaming"]
-        svg_parts.append(f'<rect x="{bx:.1f}" y="{by:.1f}" width="{bar_w:.1f}" height="{bh:.1f}" rx="4" fill="{color}"/>')
-        val_k = d["viewers"]/1000
-        svg_parts.append(f'<text x="{bx+bar_w/2:.1f}" y="{by-8}" font-family="DejaVu Sans Mono" font-size="11.5" font-weight="bold" fill="{P["text"]}" text-anchor="middle">{val_k:.0f}K</text>')
-        svg_parts.append(f'<text x="{bx+bar_w/2:.1f}" y="{chart_y+chart_h+20}" font-family="DejaVu Sans Mono" font-size="11" fill="{P["text3"]}" text-anchor="middle">{d["year"]}</text>')
-    y += s1_h + 34
+    step = chart_w/(n-1)
+    coords = [(chart_x+i*step, chart_y+chart_h-((d["viewers"]-min_v)/(max_v-min_v+1)*chart_h*0.9)-chart_h*0.05) for i,d in enumerate(us_view)]
+    path_line = "M" + " L".join(f"{x:.1f},{yy:.1f}" for x,yy in coords)
+    path_area = path_line + f" L{coords[-1][0]:.1f},{chart_y+chart_h} L{coords[0][0]:.1f},{chart_y+chart_h} Z"
+    svg_parts.append(f'''<defs><linearGradient id="tGrad{lang}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="{P["red"]}" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="{P["red"]}" stop-opacity="0.02"/>
+    </linearGradient></defs>''')
+    svg_parts.append(f'<path d="{path_area}" fill="url(#tGrad{lang})"/>')
+    svg_parts.append(f'<path d="{path_line}" fill="none" stroke="{P["red"]}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>')
+    for i,(x,yy) in enumerate(coords):
+        svg_parts.append(f'<circle cx="{x:.1f}" cy="{yy:.1f}" r="5" fill="#fff" stroke="{P["red"]}" stroke-width="2.5"/>')
+        svg_parts.append(f'<text x="{x:.1f}" y="{yy-14:.1f}" font-family="DejaVu Sans Mono" font-size="12" font-weight="bold" fill="{P["text"]}" text-anchor="middle">{us_view[i]["viewers"]/1000:.0f}K</text>')
+        svg_parts.append(f'<text x="{x:.1f}" y="{chart_y+chart_h+24:.1f}" font-family="DejaVu Sans Mono" font-size="11.5" fill="{P["text3"]}" text-anchor="middle">{us_view[i]["year"]}</text>')
+    # marcador de luces de largada en el punto 2019 (indice 1)
+    mark_x = coords[1][0]
+    svg_parts.append(f'<line x1="{mark_x:.1f}" y1="{chart_y-10}" x2="{mark_x:.1f}" y2="{chart_y+chart_h+10}" stroke="{P["track"]}" stroke-width="1" stroke-dasharray="3 4" opacity="0.4"/>')
+    svg_parts.append(start_lights(mark_x-52, chart_y-28, r=5, gap=13))
+    svg_parts.append(f'<text x="{mark_x:.1f}" y="{chart_y-40}" font-family="DejaVu Sans" font-size="10.5" font-weight="bold" fill="{P["text2"]}" text-anchor="middle">{esc(s1_marker)}</text>')
+    y += s1_h + 44
 
-    # ============ SECCION 2: EL HALLAZGO (circulos de tamaño) ============
-    svg_parts.append(f'<text x="70" y="{y}" font-family="DejaVu Sans Mono" font-size="13.5" font-weight="bold" fill="{P["streaming"]}">{esc(s2_eyebrow)}</text>')
-    y += 28
-    svg_parts.append(f'<text x="70" y="{y}" font-family="DejaVu Sans" font-size="22" font-weight="bold" fill="{P["text"]}">{esc(s2_title)}</text>')
+    # ============ SECCION 2: MEDIDORES (nuevo) ============
+    svg_parts.append(f'<text x="70" y="{y}" font-family="DejaVu Sans" font-size="24" font-weight="bold" fill="{P["text"]}">{esc(s2_title)}</text>')
+    y += 26
+    svg_parts.append(f'<text x="70" y="{y}" font-family="DejaVu Sans" font-size="13.5" fill="{P["text2"]}">{esc(s2_sub)}</text>')
     y += 30
-    s2_h = 430
-    svg_parts.append(f'<rect x="70" y="{y}" width="{W-140}" height="{s2_h}" rx="16" fill="{P["card"]}" stroke="{P["border"]}"/>')
-    mid_x = W/2
-    svg_parts.append(f'<line x1="{mid_x}" y1="{y+24}" x2="{mid_x}" y2="{y+s2_h-90}" stroke="{P["border"]}" stroke-width="1"/>')
+    s2_h = 260
+    svg_parts.append(f'<rect x="70" y="{y}" width="{W-140}" height="{s2_h}" rx="20" fill="{P["surface"]}"/>')
+    gauge_r = 92
+    gauge_cy = y + 175
+    gxs = [70+(W-140)/6, 70+(W-140)/2, 70+5*(W-140)/6]
+    svg_parts.append(speed_gauge(gxs[0], gauge_cy, gauge_r, 104, 180, g1_lbl, g1_big))
+    svg_parts.append(speed_gauge(gxs[1], gauge_cy, gauge_r, 60, 180, g2_lbl, g2_big))
+    svg_parts.append(speed_gauge(gxs[2], gauge_cy, gauge_r, 177, 180, g3_lbl, g3_big))
+    y += s2_h + 44
 
-    lx_cx = 70 + (W-140)/4
-    rx_cx = mid_x + (W-140)/4
-    l1, _ = wrap_tspans(s2_left_lbl, lx_cx, 26, 13, anchor="middle")
-    svg_parts.append(f'<text x="{lx_cx}" y="{y+38}" font-family="DejaVu Sans" font-size="13" font-weight="bold" fill="{P["text2"]}" text-anchor="middle">{l1}</text>')
-    l2, _ = wrap_tspans(s2_right_lbl, rx_cx, 26, 13, anchor="middle")
-    svg_parts.append(f'<text x="{rx_cx}" y="{y+38}" font-family="DejaVu Sans" font-size="13" font-weight="bold" fill="{P["text2"]}" text-anchor="middle">{l2}</text>')
+    # ============ SECCION 3: MESETA (hallazgo nuevo) ============
+    svg_parts.append(f'<text x="70" y="{y}" font-family="DejaVu Sans Mono" font-size="12.5" font-weight="bold" letter-spacing="1" fill="{P["red"]}">{esc(s3_eyebrow)}</text>')
+    y += 28
+    title_lines, ntitle = wrap_tspans(s3_title, 70, 52, 22)
+    svg_parts.append(f'<text x="70" y="{y}" font-family="DejaVu Sans" font-size="22" font-weight="bold" fill="{P["text"]}">{title_lines}</text>')
+    y += ntitle*22*1.3 + 18
+    s3_h = 130
+    svg_parts.append(f'<rect x="70" y="{y}" width="{W-140}" height="{s3_h}" rx="16" fill="{P["surface"]}" stroke="{P["red"]}" stroke-width="1.5"/>')
+    text_lines, ntext = wrap_tspans(s3_text, 98, 100, 14.5)
+    ty = y + s3_h/2 - (ntext-1)*14.5*1.3/2 + 5
+    svg_parts.append(f'<text x="98" y="{ty}" font-family="DejaVu Sans" font-size="14.5" fill="{P["text"]}">{text_lines}</text>')
+    y += s3_h + 44
 
-    circle_cy = y + 195
-    circle_max_r = 95
-    c1, _ = circle_metric(lx_cx, circle_cy, circle_max_r, 22, P["bad"], "22%", min_r=28)
-    svg_parts.append(c1)
-    c2, _ = circle_metric(rx_cx, circle_cy, circle_max_r, 100, P["good"], record_label)
-    svg_parts.append(c2)
-    # el circulo mas grande posible llega hasta circle_cy + circle_max_r; las
-    # etiquetas de abajo empiezan despues de eso, con margen, sin importar
-    # el tamaño real de cada circulo individual
-    sub_y = circle_cy + circle_max_r + 34
+    # ============ SECCION 4: SCATTER (nuevo) ============
+    svg_parts.append(f'<text x="70" y="{y}" font-family="DejaVu Sans Mono" font-size="12.5" font-weight="bold" letter-spacing="1" fill="{P["red"]}">{esc(s4_eyebrow)}</text>')
+    y += 28
+    svg_parts.append(f'<text x="70" y="{y}" font-family="DejaVu Sans" font-size="22" font-weight="bold" fill="{P["text"]}">{esc(s4_title)}</text>')
+    y += 30
+    s4_h = 330
+    svg_parts.append(f'<rect x="70" y="{y}" width="{W-140}" height="{s4_h}" rx="20" fill="{P["surface"]}"/>')
+    plot_x, plot_y, plot_w, plot_h = 130, y+34, 520, 190
+    # ejes
+    svg_parts.append(f'<line x1="{plot_x}" y1="{plot_y}" x2="{plot_x}" y2="{plot_y+plot_h}" stroke="{P["border"]}" stroke-width="1.5"/>')
+    svg_parts.append(f'<line x1="{plot_x}" y1="{plot_y+plot_h}" x2="{plot_x+plot_w}" y2="{plot_y+plot_h}" stroke="{P["border"]}" stroke-width="1.5"/>')
+    svg_parts.append(f'<text x="{plot_x+plot_w/2}" y="{plot_y+plot_h+34}" font-family="DejaVu Sans" font-size="11.5" fill="{P["text2"]}" text-anchor="middle">{esc(s4_xlabel)}</text>')
+    svg_parts.append(f'<text x="{plot_x-46}" y="{plot_y+plot_h/2}" font-family="DejaVu Sans" font-size="11.5" fill="{P["text2"]}" text-anchor="middle" transform="rotate(-90 {plot_x-46} {plot_y+plot_h/2})">{esc(s4_ylabel)}</text>')
+    xs = [r["tomatometer"] for r in dts_effect_df.to_dict(orient="records")]
+    ys_raw = dts_effect_df["crecimiento_audiencia_año_siguiente_pct"].tolist()
+    temporadas = dts_effect_df["temporada"].tolist()
+    x_min, x_max = 0, 100
+    y_min, y_max = min(ys_raw)-8, max(ys_raw)+8
+    for xi, yi, temp in zip(xs, ys_raw, temporadas):
+        px = plot_x + (xi-x_min)/(x_max-x_min)*plot_w
+        py = plot_y + plot_h - (yi-y_min)/(y_max-y_min)*plot_h
+        svg_parts.append(f'<circle cx="{px:.1f}" cy="{py:.1f}" r="9" fill="{P["red"]}" opacity="0.85"/>')
+        svg_parts.append(f'<text x="{px:.1f}" y="{py-16:.1f}" font-family="DejaVu Sans Mono" font-size="11.5" font-weight="bold" fill="{P["text"]}" text-anchor="middle">S{temp}</text>')
+    # ticks del eje x
+    for xt in [0,25,50,75,100]:
+        px = plot_x + (xt-x_min)/(x_max-x_min)*plot_w
+        svg_parts.append(f'<text x="{px:.1f}" y="{plot_y+plot_h+16}" font-family="DejaVu Sans Mono" font-size="10" fill="{P["text3"]}" text-anchor="middle">{xt}</text>')
+    # texto explicativo a la derecha
+    text_x = plot_x + plot_w + 50
+    text_lines2, ntext2 = wrap_tspans(s4_text, text_x, 34, 14)
+    svg_parts.append(f'<text x="{text_x}" y="{plot_y+30}" font-family="DejaVu Sans" font-size="14" fill="{P["text"]}">{text_lines2}</text>')
+    y += s4_h + 44
 
-    cap_l, _ = wrap_tspans(s2_left_sub, lx_cx, 30, 12.5, anchor="middle")
-    svg_parts.append(f'<text x="{lx_cx}" y="{sub_y}" font-family="DejaVu Sans" font-size="12.5" fill="{P["bad"]}" text-anchor="middle">{cap_l}</text>')
-    cap_r, _ = wrap_tspans(s2_right_sub, rx_cx, 30, 12.5, anchor="middle")
-    svg_parts.append(f'<text x="{rx_cx}" y="{sub_y}" font-family="DejaVu Sans" font-size="12.5" fill="{P["good"]}" text-anchor="middle">{cap_r}</text>')
-
-    cap3, ncap3 = wrap_tspans(s2_caption, mid_x, 96, 13, anchor="middle")
-    svg_parts.append(f'<text x="{mid_x}" y="{sub_y+40}" font-family="DejaVu Sans" font-size="13" fill="{P["text2"]}" text-anchor="middle">{cap3}</text>')
-    y += s2_h + 36
-
-    # ============ SECCION 3: FORECAST MINI ============
-    svg_parts.append(f'<text x="70" y="{y}" font-family="DejaVu Sans Mono" font-size="13.5" font-weight="bold" fill="{P["streaming"]}">{esc(s3_eyebrow)}</text>')
+    # ============ SECCION 5: FORECAST MINI ============
+    svg_parts.append(f'<text x="70" y="{y}" font-family="DejaVu Sans Mono" font-size="12.5" font-weight="bold" letter-spacing="1" fill="{P["text2"]}">{esc(s5_label)}</text>')
     y += 26
-    svg_parts.append(f'<text x="70" y="{y}" font-family="DejaVu Sans" font-size="20" font-weight="bold" fill="{P["text"]}">{esc(s3_title)}</text>')
-    y += 26
-    s3_h = 200
-    svg_parts.append(f'<rect x="70" y="{y}" width="{W-140}" height="{s3_h}" rx="16" fill="{P["card"]}" stroke="{P["streaming"]}" stroke-width="1.5"/>')
-    fc = ai_metrics["us_viewership_forecast"]
+    s5_h = 190
+    svg_parts.append(f'<rect x="70" y="{y}" width="{W-140}" height="{s5_h}" rx="20" fill="{P["surface"]}"/>')
+    fc = ai["us_viewership_forecast"]
     hist_pts = [(d["year"], d["viewers"]) for d in us_view]
     fc_pts = [(d["year"], d["pred"]) for d in fc]
+    fc_upper = [(d["year"], d["upper"]) for d in fc]
+    fc_lower = [(d["year"], d["lower"]) for d in fc]
     all_pts = hist_pts + fc_pts
-    all_years = [p[0] for p in all_pts]
-    all_vals = [p[1] for p in all_pts]
-    max_v2 = max(all_vals)
-    cx0, cy0, cw, ch = 98, y+30, W-140-56, 130
+    max_v2 = max(d["upper"] for d in fc) 
+    max_v2 = max(max_v2, max(v for _,v in hist_pts))
+    cx0, cy0, cw, ch = 100, y+28, W-140-60, 120
     n2 = len(all_pts)
-    step = cw / (n2-1)
-    coords = [(cx0+i*step, cy0+ch-(v/max_v2)*ch) for i,(yr,v) in enumerate(all_pts)]
-    hist_n = len(hist_pts)
-    hist_path = "M" + " L".join(f"{x:.1f},{yy:.1f}" for x,yy in coords[:hist_n])
-    fc_path = "M" + " L".join(f"{x:.1f},{yy:.1f}" for x,yy in coords[hist_n-1:])
-    svg_parts.append(f'<path d="{hist_path}" fill="none" stroke="{P["broadcast"]}" stroke-width="3"/>')
-    svg_parts.append(f'<path d="{fc_path}" fill="none" stroke="{P["streaming"]}" stroke-width="3" stroke-dasharray="7 5"/>')
-    for i,(x,yy) in enumerate(coords):
-        col = P["broadcast"] if i < hist_n else P["streaming"]
-        svg_parts.append(f'<circle cx="{x:.1f}" cy="{yy:.1f}" r="4.5" fill="{col}"/>')
+    stepf = cw/(n2-1)
+    def yscale(v): return cy0+ch-(v/max_v2)*ch
+    coords_h = [(cx0+i*stepf, yscale(v)) for i,(yr,v) in enumerate(hist_pts)]
+    coords_f = [(cx0+(len(hist_pts)+i)*stepf, yscale(v)) for i,(yr,v) in enumerate(fc_pts)]
+    coords_fu = [(cx0+(len(hist_pts)+i)*stepf, yscale(v)) for i,(yr,v) in enumerate(fc_upper)]
+    coords_fl = [(cx0+(len(hist_pts)+i)*stepf, yscale(v)) for i,(yr,v) in enumerate(fc_lower)]
+    band = "M" + f"{coords_h[-1][0]:.1f},{coords_h[-1][1]:.1f} L" + " L".join(f"{x:.1f},{yy:.1f}" for x,yy in coords_fu) + " L" + " L".join(f"{x:.1f},{yy:.1f}" for x,yy in reversed(coords_fl)) + " Z"
+    svg_parts.append(f'<path d="{band}" fill="{P["red"]}" opacity="0.10"/>')
+    hist_path = "M" + " L".join(f"{x:.1f},{yy:.1f}" for x,yy in coords_h)
+    fc_path = "M" + f"{coords_h[-1][0]:.1f},{coords_h[-1][1]:.1f} L" + " L".join(f"{x:.1f},{yy:.1f}" for x,yy in coords_f)
+    svg_parts.append(f'<path d="{hist_path}" fill="none" stroke="{P["track"]}" stroke-width="2.5"/>')
+    svg_parts.append(f'<path d="{fc_path}" fill="none" stroke="{P["red"]}" stroke-width="2.5" stroke-dasharray="6 4"/>')
+    for i,(yr,v) in enumerate(all_pts):
+        x = cx0+i*stepf
+        yy = yscale(v)
+        col = P["track"] if i < len(hist_pts) else P["red"]
+        if i % 1 == 0:
+            svg_parts.append(f'<circle cx="{x:.1f}" cy="{yy:.1f}" r="3.5" fill="{col}"/>')
         if i % 2 == 0 or i == n2-1:
-            svg_parts.append(f'<text x="{x:.1f}" y="{cy0+ch+20}" font-family="DejaVu Sans Mono" font-size="10.5" fill="{P["text3"]}" text-anchor="middle">{all_years[i]}</text>')
-    y += s3_h + 36
+            svg_parts.append(f'<text x="{x:.1f}" y="{cy0+ch+20}" font-family="DejaVu Sans Mono" font-size="10.5" fill="{P["text3"]}" text-anchor="middle">{yr}</text>')
+    y += s5_h + 40
 
     # ---------- CTA ----------
-    cta_h = 68
-    svg_parts.append(f'<rect x="70" y="{y}" width="{W-140}" height="{cta_h}" rx="14" fill="{P["streaming"]}"/>')
-    svg_parts.append(f'<text x="100" y="{y+cta_h/2+6}" font-family="DejaVu Sans" font-size="16" font-weight="bold" fill="{P["bg"]}">{esc(cta)}</text>')
-    svg_parts.append(f'<text x="{W-100}" y="{y+cta_h/2+5}" font-family="DejaVu Sans Mono" font-size="12.5" fill="{P["bg"]}" text-anchor="end">{esc(cta2)}</text>')
-    y += cta_h + 30
-
-    svg_parts.append(f'<text x="{mid_x}" y="{y}" font-family="DejaVu Sans Mono" font-size="11" fill="{P["text3"]}" text-anchor="middle">{esc(footer)}</text>')
-    y += 34
-    svg_parts.append(flagstrip(0, y, W, 8))
-    y += 8
+    svg_parts.append(f'<line x1="70" y1="{y}" x2="{W-70}" y2="{y}" stroke="{P["border"]}" stroke-width="1"/>')
+    y += 44
+    svg_parts.append(f'<rect x="70" y="{y}" width="{W-140}" height="64" rx="32" fill="{P["track"]}"/>')
+    svg_parts.append(f'<text x="{W/2}" y="{y+40}" font-family="DejaVu Sans" font-size="17" font-weight="bold" fill="#fff" text-anchor="middle">{esc(cta)}</text>')
+    y += 64 + 26
+    svg_parts.append(f'<text x="{W/2}" y="{y}" font-family="DejaVu Sans Mono" font-size="12" fill="{P["text2"]}" text-anchor="middle">{esc(cta2)}</text>')
+    y += 22
+    svg_parts.append(f'<text x="{W/2}" y="{y+20}" font-family="DejaVu Sans Mono" font-size="10.5" fill="{P["text3"]}" text-anchor="middle">{esc(footer)}</text>')
+    y += 50
 
     H = int(y)
     svg = f'<svg viewBox="0 0 {W} {H}" xmlns="http://www.w3.org/2000/svg">' + "".join(svg_parts).replace("__H__", str(H)) + '</svg>'
