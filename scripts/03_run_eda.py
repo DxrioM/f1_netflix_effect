@@ -16,7 +16,8 @@ with open(SQL_PATH) as f:
 
 blocks = re.split(r'-- \d+\.', content)[1:]
 keys = ["us_viewership_serie", "global_tv_serie", "attendance_serie",
-        "social_serie", "dts_tomatometer", "comparativa_before_after"]
+        "social_serie", "dts_tomatometer", "comparativa_before_after",
+        "driver_engagement", "f1_account_instagram"]
 
 results = {}
 for key, block in zip(keys, blocks):

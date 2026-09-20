@@ -30,6 +30,13 @@ Comparé el **Tomatometer real** de cada temporada de Drive to Survive contra mi
 
 Esto sugiere que el "efecto Netflix" ya generó un efecto de marca autosuficiente — la audiencia ya no depende de que cada temporada de la serie sea buena. La correlación entre Tomatometer y crecimiento de audiencia del año siguiente es prácticamente nula (y no significativa, dado el tamaño de muestra n=4).
 
+## El efecto Netflix también hizo estrellas a los pilotos
+
+Drive to Survive no solo hizo crecer a F1 como marca — convirtió a varios pilotos en celebridades de redes sociales por derecho propio. Dos hallazgos reales, con datos del mismo estudio (tonybet/Social Blade vía GrandPrix247, mayo 2024) para asegurar metodología consistente:
+
+- **Más seguidores no es más audiencia comprometida**: Lando Norris tiene 8.3M de seguidores en Instagram (menos de la cuarta parte de los 37M de Hamilton), pero su tasa de engagement es 11.70% — más del doble que la de Hamilton (4.52%) y Ricciardo (3.74%). La correlación entre seguidores y engagement es débil y no significativa (r=-0.35, p=0.65, n=4), pero el patrón cualitativo es contundente.
+- **La marca de un piloto puede superar a la del propio deporte**: la cuenta oficial de F1 en Instagram pasó de 5.6M (2018) a 21.6M (2022). Para 2023, Lewis Hamilton ya tenía 44% más seguidores en Instagram que la cuenta oficial de F1 — y para 2024 su cuenta alcanzó 37M, muy por encima de la del propio deporte que lo hizo famoso.
+
 ## Las dos técnicas de IA
 
 1. **VADER** (Valence Aware Dictionary and sEntiment Reasoner) — analizador de sentimiento léxico validado en investigación académica (Hutto & Gilbert, 2014). Se aplicó a descripciones parafraseadas de la recepción crítica de cada temporada, y se comparó contra el Tomatometer real de Rotten Tomatoes. Hallazgo honesto: la correlación (r=0.50) no es estadísticamente significativa con una muestra de solo 4 temporadas — una limitación real del análisis de sentimiento léxico frente al consenso profesional de críticos.
@@ -45,6 +52,7 @@ A diferencia de un proyecto anterior donde tuve que descartar una fuente complet
 f1_portfolio/
 ├── data/
 │   ├── raw/f1_netflix_effect_data.py   # datos crudos verificados
+│   ├── raw/f1_social_drivers_data.py   # engagement de pilotos + cuenta de F1
 │   └── processed/                       # CSV/JSON limpios + base SQLite
 ├── sql/
 │   ├── 01_schema.sql

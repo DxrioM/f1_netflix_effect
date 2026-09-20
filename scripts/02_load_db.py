@@ -15,6 +15,8 @@ global_tv["es_estimado"] = global_tv["es_estimado"].astype(int)
 attendance = pd.read_csv(PROC + "attendance.csv")
 social = pd.read_csv(PROC + "social_followers.csv")
 dts = pd.read_csv(PROC + "dts_seasons.csv")
+driver_eng = pd.read_csv(PROC + "driver_engagement.csv")
+f1_ig = pd.read_csv(PROC + "f1_account_instagram.csv")
 
 conn = sqlite3.connect(DB_PATH)
 cur = conn.cursor()
@@ -26,9 +28,11 @@ global_tv.to_sql("global_tv", conn, if_exists="append", index=False)
 attendance.to_sql("attendance", conn, if_exists="append", index=False)
 social.to_sql("social_followers", conn, if_exists="append", index=False)
 dts.to_sql("dts_seasons", conn, if_exists="append", index=False)
+driver_eng.to_sql("driver_engagement", conn, if_exists="append", index=False)
+f1_ig.to_sql("f1_account_instagram", conn, if_exists="append", index=False)
 conn.commit()
 
-for t in ["us_viewership", "global_tv", "attendance", "social_followers", "dts_seasons"]:
+for t in ["us_viewership", "global_tv", "attendance", "social_followers", "dts_seasons", "driver_engagement", "f1_account_instagram"]:
     n = cur.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0]
     print(f"  {t}: {n} filas")
 conn.close()

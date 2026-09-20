@@ -17,6 +17,12 @@ attendance = pd.DataFrame(raw.SEASON_ATTENDANCE, columns=["year", "millones", "f
 social = pd.DataFrame(raw.SOCIAL_FOLLOWERS, columns=["year", "millones", "fuente"])
 dts = pd.DataFrame(raw.DTS_SEASONS, columns=["temporada", "año", "tomatometer", "num_reviews", "descripcion_es", "descripcion_en"])
 
+# --- datos nuevos: engagement de pilotos + cuenta oficial de F1 ---
+sys.path.insert(0, "/home/claude/f1_portfolio/data/raw")
+import f1_social_drivers_data as social_raw
+driver_eng = pd.DataFrame(social_raw.DRIVER_ENGAGEMENT, columns=["piloto", "seguidores_millones", "engagement_pct", "valor_post_usd"])
+f1_ig = pd.DataFrame(social_raw.F1_ACCOUNT_INSTAGRAM, columns=["year", "millones", "fuente"])
+
 # tasa de crecimiento interanual de audiencia EE.UU. (para correlacionar con recepcion de DTS)
 us_view["yoy_growth_pct"] = us_view["viewers"].pct_change() * 100
 
@@ -41,6 +47,8 @@ attendance.to_csv(f"{OUT_DIR}/attendance.csv", index=False)
 social.to_csv(f"{OUT_DIR}/social_followers.csv", index=False)
 dts.to_csv(f"{OUT_DIR}/dts_seasons.csv", index=False)
 dts_effect_df.to_csv(f"{OUT_DIR}/dts_effect.csv", index=False)
+driver_eng.to_csv(f"{OUT_DIR}/driver_engagement.csv", index=False)
+f1_ig.to_csv(f"{OUT_DIR}/f1_account_instagram.csv", index=False)
 
 print("Audiencia EE.UU. con crecimiento YoY:")
 print(us_view[["year","viewers","yoy_growth_pct"]].to_string(index=False))

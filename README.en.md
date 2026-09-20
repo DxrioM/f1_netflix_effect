@@ -30,6 +30,13 @@ I compared the **real Tomatometer score** of each Drive to Survive season agains
 
 This suggests the "Netflix effect" has already produced a self-sustaining brand halo — audience growth no longer depends on each season of the show being good. The correlation between Tomatometer score and the following year's audience growth is essentially null (and not significant, given the n=4 sample size).
 
+## The Netflix effect made drivers stars too
+
+Drive to Survive didn't just grow F1 as a brand — it turned several drivers into social media celebrities in their own right. Two real findings, using data from the same study (tonybet/Social Blade via GrandPrix247, May 2024) to keep the methodology consistent:
+
+- **More followers isn't more engaged audience**: Lando Norris has 8.3M Instagram followers (less than a quarter of Hamilton's 37M), but his engagement rate is 11.70% — more than double Hamilton's (4.52%) and Ricciardo's (3.74%). The correlation between followers and engagement is weak and not significant (r=-0.35, p=0.65, n=4), but the qualitative pattern is striking.
+- **A driver's brand can outgrow the sport's own brand**: F1's official Instagram account grew from 5.6M (2018) to 21.6M (2022). By 2023, Lewis Hamilton already had 44% more Instagram followers than F1's own account — and by 2024 his account reached 37M, well above the sport that made him famous.
+
 ## The two AI techniques
 
 1. **VADER** (Valence Aware Dictionary and sEntiment Reasoner) — a lexicon-based sentiment analyzer validated in academic research (Hutto & Gilbert, 2014). Applied to paraphrased descriptions of each season's critical reception, then compared against the real Rotten Tomatoes Tomatometer. Honest finding: the correlation (r=0.50) isn't statistically significant with a sample of only 4 seasons — a real limitation of lexicon-based sentiment analysis against professional critic consensus.
@@ -45,6 +52,7 @@ Unlike an earlier project where I had to discard an entire data source (global d
 f1_portfolio/
 ├── data/
 │   ├── raw/f1_netflix_effect_data.py   # verified raw data
+│   ├── raw/f1_social_drivers_data.py   # driver engagement + F1 account data
 │   └── processed/                       # clean CSV/JSON + SQLite database
 ├── sql/
 │   ├── 01_schema.sql

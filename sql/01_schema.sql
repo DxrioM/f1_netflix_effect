@@ -26,3 +26,10 @@ CREATE TABLE dts_seasons (
     tomatometer INTEGER NOT NULL, num_reviews INTEGER,
     descripcion_es TEXT, descripcion_en TEXT
 );
+CREATE TABLE driver_engagement (
+    piloto TEXT PRIMARY KEY, seguidores_millones REAL NOT NULL,
+    engagement_pct REAL NOT NULL, valor_post_usd INTEGER
+);
+CREATE TABLE f1_account_instagram (
+    year INTEGER PRIMARY KEY, millones REAL NOT NULL, fuente TEXT
+);

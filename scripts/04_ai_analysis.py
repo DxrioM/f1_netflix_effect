@@ -74,6 +74,15 @@ print("  Proyeccion asistencia:")
 for f in att_forecast_list:
     print(f"    {f['year']}: {f['pred']}M (IC80%: {f['lower']}M - {f['upper']}M)")
 
+# ============================================================
+# 3) ENGAGEMENT VS. SEGUIDORES POR PILOTO
+# ============================================================
+print("\n[3/3] Correlacion engagement vs. seguidores...")
+driver_eng = pd.read_csv(PROC + "driver_engagement.csv")
+r_eng, p_eng = stats.pearsonr(driver_eng["seguidores_millones"], driver_eng["engagement_pct"])
+print(f"  Correlacion seguidores vs. engagement: r={r_eng:.3f} (p={p_eng:.3f}, n={len(driver_eng)})")
+print(driver_eng.to_string(index=False))
+
 dts.to_csv(PROC + "dts_seasons.csv", index=False)  # ahora incluye columnas vader
 
 metrics = {
@@ -81,6 +90,7 @@ metrics = {
     "dts_seasons_sentiment": dts[["temporada", "año", "tomatometer", "vader_score_0_100"]].to_dict(orient="records"),
     "us_viewership_forecast": us_forecast_list,
     "attendance_forecast": att_forecast_list,
+    "engagement_correlation": {"r": round(float(r_eng), 3), "p": round(float(p_eng), 3), "n": int(len(driver_eng))},
 }
 with open(PROC + "ai_metrics.json", "w", encoding="utf-8") as f:
     json.dump(metrics, f, indent=2, ensure_ascii=False)

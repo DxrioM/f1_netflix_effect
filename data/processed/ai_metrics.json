@@ -34,26 +34,26 @@
     {
       "year": 2025,
       "pred": 1365540,
-      "lower": 1228686,
-      "upper": 1508164
+      "lower": 1223087,
+      "upper": 1497495
     },
     {
       "year": 2026,
       "pred": 1483533,
-      "lower": 1343775,
-      "upper": 1608735
+      "lower": 1348533,
+      "upper": 1623694
     },
     {
       "year": 2027,
       "pred": 1601527,
-      "lower": 1466876,
-      "upper": 1738935
+      "lower": 1466240,
+      "upper": 1742487
     },
     {
       "year": 2028,
       "pred": 1719520,
-      "lower": 1576023,
-      "upper": 1873037
+      "lower": 1578148,
+      "upper": 1861088
     }
   ],
   "attendance_forecast": [
@@ -66,14 +66,19 @@
     {
       "year": 2027,
       "pred": 7.3,
-      "lower": 7.19,
-      "upper": 7.42
+      "lower": 7.18,
+      "upper": 7.41
     },
     {
       "year": 2028,
       "pred": 7.59,
-      "lower": 7.38,
-      "upper": 7.82
+      "lower": 7.36,
+      "upper": 7.8
     }
-  ]
+  ],
+  "engagement_correlation": {
+    "r": -0.348,
+    "p": 0.652,
+    "n": 4
+  }
 }

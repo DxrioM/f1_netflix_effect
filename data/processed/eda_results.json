@@ -136,5 +136,41 @@
       "social_2020": 35.0,
       "social_2024": 97.0
     }
+  ],
+  "driver_engagement": [
+    {
+      "piloto": "Lewis Hamilton",
+      "seguidores_millones": 37.0,
+      "engagement_pct": 4.52,
+      "valor_post_usd": 177654
+    },
+    {
+      "piloto": "Max Verstappen",
+      "seguidores_millones": 12.1,
+      "engagement_pct": 4.44,
+      "valor_post_usd": 38540
+    },
+    {
+      "piloto": "Daniel Ricciardo",
+      "seguidores_millones": 9.1,
+      "engagement_pct": 3.74,
+      "valor_post_usd": 29174
+    },
+    {
+      "piloto": "Lando Norris",
+      "seguidores_millones": 8.3,
+      "engagement_pct": 11.7,
+      "valor_post_usd": 26489
+    }
+  ],
+  "f1_account_instagram": [
+    {
+      "year": 2018,
+      "millones": 5.6
+    },
+    {
+      "year": 2022,
+      "millones": 21.6
+    }
   ]
 }

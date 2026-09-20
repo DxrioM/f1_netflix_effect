@@ -125,6 +125,7 @@ footer p{font-size:12px; color:var(--text3); max-width:640px; margin:0 auto; lin
       <li><a class="navlink" href="#audiencia" data-i18n="nav_audiencia"></a></li>
       <li><a class="navlink" href="#dts" data-i18n="nav_dts"></a></li>
       <li><a class="navlink" href="#forecast" data-i18n="nav_forecast"></a></li>
+      <li><a class="navlink" href="#redes" data-i18n="nav_redes"></a></li>
       <li class="lang-item">
         <div class="lang-switch">
           <a href="index.html" class="active">ES</a>
@@ -222,6 +223,39 @@ footer p{font-size:12px; color:var(--text3); max-width:640px; margin:0 auto; lin
         <h3 data-i18n="chart_fc_att_h3"></h3>
         <div class="sub" data-i18n="chart_fc_sub"></div>
         <canvas id="chart-forecast-att"></canvas>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="redes" class="alt">
+  <div class="container">
+    <div class="section-head">
+      <h2 data-i18n="social_h2"></h2>
+      <p data-i18n="social_sub"></p>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <h3 data-i18n="chart_engagement_h3"></h3>
+        <div class="sub" data-i18n="chart_engagement_sub"></div>
+        <canvas id="chart-engagement"></canvas>
+      </div>
+      <div class="finding-card">
+        <h3 data-i18n="finding_social_h3"></h3>
+        <div class="big" id="finding-norris">—</div>
+        <p style="color:var(--text2); font-size:14px;" data-i18n="finding_social_text"></p>
+      </div>
+    </div>
+    <div class="grid-2" style="margin-top:18px;">
+      <div class="card">
+        <h3 data-i18n="chart_hamilton_h3"></h3>
+        <div class="sub" data-i18n="chart_hamilton_sub"></div>
+        <canvas id="chart-hamilton"></canvas>
+      </div>
+      <div class="card">
+        <h3 data-i18n="chart_ranking_h3"></h3>
+        <div class="sub" data-i18n="chart_ranking_sub"></div>
+        <canvas id="chart-ranking-drivers"></canvas>
       </div>
     </div>
   </div>
@@ -387,6 +421,42 @@ footer p{font-size:12px; color:var(--text3); max-width:640px; margin:0 auto; lin
       "social_2020": 35.0,
       "social_2024": 97.0
     }
+  ],
+  "driver_engagement": [
+    {
+      "piloto": "Lewis Hamilton",
+      "seguidores_millones": 37.0,
+      "engagement_pct": 4.52,
+      "valor_post_usd": 177654
+    },
+    {
+      "piloto": "Max Verstappen",
+      "seguidores_millones": 12.1,
+      "engagement_pct": 4.44,
+      "valor_post_usd": 38540
+    },
+    {
+      "piloto": "Daniel Ricciardo",
+      "seguidores_millones": 9.1,
+      "engagement_pct": 3.74,
+      "valor_post_usd": 29174
+    },
+    {
+      "piloto": "Lando Norris",
+      "seguidores_millones": 8.3,
+      "engagement_pct": 11.7,
+      "valor_post_usd": 26489
+    }
+  ],
+  "f1_account_instagram": [
+    {
+      "year": 2018,
+      "millones": 5.6
+    },
+    {
+      "year": 2022,
+      "millones": 21.6
+    }
   ]
 }</script>
 <script id="data-ai" type="application/json">{
@@ -425,26 +495,26 @@ footer p{font-size:12px; color:var(--text3); max-width:640px; margin:0 auto; lin
     {
       "year": 2025,
       "pred": 1365540,
-      "lower": 1228686,
-      "upper": 1508164
+      "lower": 1223087,
+      "upper": 1497495
     },
     {
       "year": 2026,
       "pred": 1483533,
-      "lower": 1343775,
-      "upper": 1608735
+      "lower": 1348533,
+      "upper": 1623694
     },
     {
       "year": 2027,
       "pred": 1601527,
-      "lower": 1466876,
-      "upper": 1738935
+      "lower": 1466240,
+      "upper": 1742487
     },
     {
       "year": 2028,
       "pred": 1719520,
-      "lower": 1576023,
-      "upper": 1873037
+      "lower": 1578148,
+      "upper": 1861088
     }
   ],
   "attendance_forecast": [
@@ -457,23 +527,28 @@ footer p{font-size:12px; color:var(--text3); max-width:640px; margin:0 auto; lin
     {
       "year": 2027,
       "pred": 7.3,
-      "lower": 7.19,
-      "upper": 7.42
+      "lower": 7.18,
+      "upper": 7.41
     },
     {
       "year": 2028,
       "pred": 7.59,
-      "lower": 7.38,
-      "upper": 7.82
+      "lower": 7.36,
+      "upper": 7.8
     }
-  ]
+  ],
+  "engagement_correlation": {
+    "r": -0.348,
+    "p": 0.652,
+    "n": 4
+  }
 }</script>
 
 <script>
 const LANG = "es";
 const I18N = {
 es: {
-  nav_audiencia:"Audiencia", nav_dts:"Drive to Survive", nav_forecast:"Proyección",
+  nav_audiencia:"Audiencia", nav_dts:"Drive to Survive", nav_forecast:"Proyección", nav_redes:"Pilotos",
   hero_title:'De nicho europeo a <span class="st">fenómeno global</span>: el efecto <span class="bc">Netflix</span> en F1',
   hero_sub:"En 2019, Netflix estrenó Drive to Survive. Desde entonces, la audiencia de F1 en EE.UU. se duplicó, la asistencia a carreras alcanzó récords históricos, y los patrocinios rompieron marcas. Analizado con datos oficiales, IA de análisis de sentimiento, y modelos de forecasting.",
   hero_meta:"Fuentes: ESPN Press Room, Formula1.com, Liberty Media Corporation (reportes financieros), Rotten Tomatoes",
@@ -490,13 +565,19 @@ es: {
   chart_fc_view_h3:"Proyección de audiencia en EE.UU.", chart_fc_att_h3:"Proyección de asistencia total",
   chart_fc_sub:"Línea sólida = datos reales · línea punteada = proyección (intervalo de confianza 80%)",
   stack_h2:"Cómo se construyó", badge_vader:"(sentiment analysis)", badge_prophet:"(forecasting)", badge_corr:"correlación de Pearson",
+  social_h2:"El efecto Netflix también hizo estrellas a los pilotos", social_sub:"Drive to Survive no solo hizo crecer a F1 como marca — convirtió a varios pilotos en celebridades de redes sociales por derecho propio.",
+  chart_engagement_h3:"Engagement vs. seguidores (Instagram, 2024)", chart_engagement_sub:"Mismo estudio, misma fecha de corte para los 4 pilotos",
+  finding_social_h3:"Más seguidores no es más audiencia comprometida", finding_social_text:"Correlación débil y no significativa (r=-0.35, p=0.65, n=4) — el patrón real importa más que el coeficiente: Norris tiene menos de la cuarta parte de los seguidores de Hamilton, pero más del doble de su engagement.",
+  chart_hamilton_h3:"La marca de un piloto vs. la marca de F1", chart_hamilton_sub:"Seguidores en Instagram — cuenta oficial de F1 vs. Lewis Hamilton",
+  chart_ranking_h3:"Valor estimado por publicación patrocinada", chart_ranking_sub:"USD por post en Instagram (2024)",
+  legend_real:"Real", legend_proyeccion:"Proyección",
   footer_text:"El Efecto Netflix en F1 · Datos reales de ESPN Press Room, Formula1.com, Liberty Media Corporation y Rotten Tomatoes · github.com/DxrioM",
   axis_year:"Año", chart_error:"No se pudo cargar este gráfico.", locale:"es",
   s1_desc:"Producción pulida, accesible para no aficionados", s4_desc:"Muestra de solo 2 reseñas, opiniones opuestas",
   s5_desc:"Mejora notable — narrativa más genuina", s6_desc:"Recepción mixta — entre efectiva e indulgente",
 },
 en: {
-  nav_audiencia:"Audience", nav_dts:"Drive to Survive", nav_forecast:"Forecast",
+  nav_audiencia:"Audience", nav_dts:"Drive to Survive", nav_forecast:"Forecast", nav_redes:"Drivers",
   hero_title:'From European niche to <span class="st">global phenomenon</span>: the <span class="bc">Netflix</span> effect on F1',
   hero_sub:"In 2019, Netflix released Drive to Survive. Since then, F1's US audience has doubled, race attendance has hit historic records, and sponsorships have broken records. Analyzed with official data, AI-powered sentiment analysis, and forecasting models.",
   hero_meta:"Sources: ESPN Press Room, Formula1.com, Liberty Media Corporation (financial reports), Rotten Tomatoes",
@@ -513,6 +594,12 @@ en: {
   chart_fc_view_h3:"US audience forecast", chart_fc_att_h3:"Total attendance forecast",
   chart_fc_sub:"Solid line = real data · dashed line = forecast (80% confidence interval)",
   stack_h2:"How it was built", badge_vader:"(sentiment analysis)", badge_prophet:"(forecasting)", badge_corr:"Pearson correlation",
+  social_h2:"The Netflix effect made drivers stars too", social_sub:"Drive to Survive didn't just grow F1 as a brand — it turned several drivers into social media celebrities in their own right.",
+  chart_engagement_h3:"Engagement vs. followers (Instagram, 2024)", chart_engagement_sub:"Same study, same cutoff date for all 4 drivers",
+  finding_social_h3:"More followers isn't more engaged audience", finding_social_text:"Weak, non-significant correlation (r=-0.35, p=0.65, n=4) — the real pattern matters more than the coefficient: Norris has less than a quarter of Hamilton's followers, but more than double his engagement.",
+  chart_hamilton_h3:"A driver's brand vs. F1's own brand", chart_hamilton_sub:"Instagram followers — F1's official account vs. Lewis Hamilton",
+  chart_ranking_h3:"Estimated value per sponsored post", chart_ranking_sub:"USD per Instagram post (2024)",
+  legend_real:"Real", legend_proyeccion:"Forecast",
   footer_text:"F1's Netflix Effect · Real data from ESPN Press Room, Formula1.com, Liberty Media Corporation and Rotten Tomatoes · github.com/DxrioM",
   axis_year:"Year", chart_error:"This chart could not be loaded.", locale:"en",
   s1_desc:"Polished production, accessible to non-fans", s4_desc:"Sample of just 2 reviews, opposing opinions",
@@ -660,16 +747,66 @@ function buildForecastChart(canvasId, histSeries, histKey, forecastList, unitDiv
     data:{labels:allLabels, datasets:[
       {label:'IC 80%', data:bandUpper, borderColor:'transparent', backgroundColor:'rgba(63,201,224,0.12)', fill:'+1', pointRadius:0},
       {label:'IC 80% inf', data:bandLower, borderColor:'transparent', backgroundColor:'rgba(63,201,224,0.12)', fill:false, pointRadius:0},
-      {label:'Real', data:histData, borderColor:BC, backgroundColor:BC, tension:0.15, pointRadius:4},
-      {label:'Proyección', data:fcData, borderColor:ST, borderDash:[6,4], tension:0.15, pointRadius:4, pointBackgroundColor:ST},
+      {label:T.legend_real, data:histData, borderColor:BC, backgroundColor:BC, tension:0.15, pointRadius:4},
+      {label:T.legend_proyeccion, data:fcData, borderColor:ST, borderDash:[6,4], tension:0.15, pointRadius:4, pointBackgroundColor:ST},
     ]},
-    options:{responsive:true, plugins:{legend:{display:true, position:'bottom', labels:{filter:(item)=>item.text==='Real'||item.text==='Proyección', boxWidth:10, padding:12}}},
+    options:{responsive:true, plugins:{legend:{display:true, position:'bottom', labels:{filter:(item)=>item.text===T.legend_real||item.text===T.legend_proyeccion, boxWidth:10, padding:12}}},
       scales:{y:{grid:{color:GRID}}, x:{grid:{display:false}}}}
   });
 }
 try{
   buildForecastChart('chart-forecast-view', EDA.us_viewership_serie||[], 'viewers', AI.us_viewership_forecast||[], 1000);
   buildForecastChart('chart-forecast-att', EDA.attendance_serie||[], 'millones', AI.attendance_forecast||[], 1);
+}catch(e){ console.error(e); }
+
+// ---------- ENGAGEMENT VS SEGUIDORES (scatter) ----------
+try{
+  const rows = EDA.driver_engagement || [];
+  safeChart('chart-engagement', {
+    type:'scatter',
+    data:{datasets:[{
+      data: rows.map(d=>({x:d.seguidores_millones, y:d.engagement_pct, label:d.piloto})),
+      backgroundColor: ST, pointRadius:8, pointHoverRadius:10,
+    }]},
+    options:{responsive:true,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>c.raw.label+': '+c.raw.x+'M · '+c.raw.y+'%'}}},
+      scales:{
+        x:{grid:{color:GRID}, title:{display:true,text:T.locale==='es'?'Seguidores (millones)':'Followers (millions)', color:TXT2, font:{size:11}}},
+        y:{grid:{color:GRID}, title:{display:true,text:'Engagement %', color:TXT2, font:{size:11}}}
+      }
+    }
+  });
+  document.getElementById('finding-norris').textContent = rows.length ? Math.max(...rows.map(d=>d.engagement_pct)).toFixed(2)+'%' : '—';
+}catch(e){ console.error(e); }
+
+// ---------- HAMILTON VS F1 ----------
+try{
+  const f1ig = EDA.f1_account_instagram || [];
+  safeChart('chart-hamilton', {
+    type:'bar',
+    data:{
+      labels:['F1 (2018)', 'F1 (2022)', 'Hamilton (2024)'],
+      datasets:[{
+        data:[f1ig.find(d=>d.year===2018)?.millones||0, f1ig.find(d=>d.year===2022)?.millones||0, 37.0],
+        backgroundColor:[BC, BC, ST], borderRadius:6,
+      }]
+    },
+    options:{responsive:true, plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>c.raw+'M'}}},
+      scales:{y:{grid:{color:GRID}, ticks:{callback:v=>v+'M'}}, x:{grid:{display:false}}}}
+  });
+}catch(e){ console.error(e); }
+
+// ---------- VALOR POR POST ----------
+try{
+  const rows = (EDA.driver_engagement || []).slice().sort((a,b)=>b.valor_post_usd-a.valor_post_usd);
+  safeChart('chart-ranking-drivers', {
+    type:'bar',
+    data:{labels:rows.map(d=>d.piloto), datasets:[{
+      data:rows.map(d=>d.valor_post_usd), backgroundColor:BC, borderRadius:6,
+    }]},
+    options:{responsive:true, indexAxis:'y', plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>'$'+c.raw.toLocaleString()}}},
+      scales:{x:{grid:{color:GRID}, ticks:{callback:v=>'$'+(v/1000)+'K'}}, y:{grid:{display:false}}}}
+  });
 }catch(e){ console.error(e); }
 </script>
 </body>

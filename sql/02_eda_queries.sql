@@ -25,3 +25,11 @@ SELECT
   (SELECT millones FROM attendance WHERE year=2025) AS asistencia_2025,
   (SELECT millones FROM social_followers WHERE year=2020) AS social_2020,
   (SELECT millones FROM social_followers WHERE year=2024) AS social_2024;
+
+-- 7. Engagement vs. seguidores por piloto
+SELECT piloto, seguidores_millones, engagement_pct, valor_post_usd
+FROM driver_engagement
+ORDER BY seguidores_millones DESC;
+
+-- 8. Cuenta oficial de F1 en Instagram por año
+SELECT year, millones FROM f1_account_instagram ORDER BY year;
