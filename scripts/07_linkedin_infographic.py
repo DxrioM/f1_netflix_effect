@@ -58,23 +58,79 @@ def start_lights(x, y, r=5, gap=13, lit=5):
         svg += f'<circle cx="{x+i*gap}" cy="{y}" r="{r}" fill="{color}"/>'
     return svg
 
+def race_car_silhouette(x, y, scale, color, opacity=1.0):
+    """Silueta generica de un monoplaza de ruedas abiertas (perfil lateral,
+    mirando a la derecha) -- forma generica del tipo de vehiculo, sin
+    reproducir el diseño, patrocinios o librea de ninguna escuderia.
+    Ruedas primero (quedan parcialmente detras de la carroceria, como en
+    un perfil real), carroceria despues."""
+    s = scale
+    svg = f'<g opacity="{opacity}">'
+    svg += f'<circle cx="{x+35*s}" cy="{y+62*s}" r="{17*s}" fill="{color}"/>'
+    svg += f'<circle cx="{x+155*s}" cy="{y+64*s}" r="{19*s}" fill="{color}"/>'
+    body = (f"M {x} {y+60*s} "
+            f"L {x+18*s} {y+58*s} "
+            f"L {x+22*s} {y+48*s} "
+            f"L {x+55*s} {y+42*s} "
+            f"L {x+65*s} {y+26*s} "
+            f"L {x+95*s} {y+24*s} "
+            f"L {x+110*s} {y+34*s} "
+            f"L {x+135*s} {y+38*s} "
+            f"L {x+138*s} {y+16*s} "
+            f"L {x+178*s} {y+12*s} "
+            f"L {x+178*s} {y+20*s} "
+            f"L {x+140*s} {y+24*s} "
+            f"L {x+152*s} {y+40*s} "
+            f"L {x+158*s} {y+50*s} "
+            f"L {x+35*s} {y+50*s} Z")
+    svg += f'<path d="{body}" fill="{color}"/>'
+    svg += '</g>'
+    return svg
+
+def checkered_ribbon(x, y, w, h, cols=None):
+    """Cinta de bandera a cuadros -- simbolo generico y universal del
+    automovilismo, no asociado a ninguna marca puntual."""
+    if cols is None:
+        cols = max(2, int(w // h))
+    cw = w / cols
+    svg = f'<g>'
+    for i in range(cols):
+        for j in range(2):
+            color = "#0A0A0A" if (i+j) % 2 == 0 else "#FFFFFF"
+            svg += f'<rect x="{x+i*cw:.1f}" y="{y+j*h/2:.1f}" width="{cw:.1f}" height="{h/2:.1f}" fill="{color}"/>'
+    svg += '</g>'
+    return svg
+
 def speed_gauge(cx, cy, r, value_pct, max_val, label_lines, big_label):
     start_theta = 180
     sweep = min(180, (value_pct/max_val)*180)
     end_theta = start_theta - sweep
-    def pt(theta):
+    def pt(theta, radius=None):
+        radius = radius if radius is not None else r
         rad = math.radians(theta)
-        return (cx + r*math.cos(rad), cy - r*math.sin(rad))
+        return (cx + radius*math.cos(rad), cy - radius*math.sin(rad))
     x0,y0 = pt(start_theta)
     x1,y1 = pt(end_theta)
+    # pista de fondo
     svg = f'<path d="M {x0:.1f} {y0:.1f} A {r} {r} 0 0 1 {cx+r:.1f} {cy:.1f}" fill="none" stroke="{P["panel_track"]}" stroke-width="14" stroke-linecap="round"/>'
+    # zona de corte (redline) -- ultimo 15% del arco, como en un tacometro real
+    redline_theta = start_theta - 180*0.85
+    xr,yr = pt(redline_theta)
+    xr2,yr2 = pt(0)
+    svg += f'<path d="M {xr:.1f} {yr:.1f} A {r} {r} 0 0 1 {xr2:.1f} {yr2:.1f}" fill="none" stroke="{P["red_deep"]}" stroke-width="14" stroke-linecap="butt" opacity="0.55"/>'
+    # marcas de graduacion tipo tacometro (11 marcas, como 0-10 x1000 RPM)
+    for k in range(11):
+        theta_k = start_theta - k*18
+        tick_out = pt(theta_k, r+11)
+        tick_in = pt(theta_k, r+2)
+        svg += f'<line x1="{tick_in[0]:.1f}" y1="{tick_in[1]:.1f}" x2="{tick_out[0]:.1f}" y2="{tick_out[1]:.1f}" stroke="{P["panel_text2"]}" stroke-width="2"/>'
     large_arc = 1 if sweep > 180 else 0
     svg += f'<path d="M {x0:.1f} {y0:.1f} A {r} {r} 0 {large_arc} 1 {x1:.1f} {y1:.1f}" fill="none" stroke="{P["red"]}" stroke-width="14" stroke-linecap="round"/>'
     needle_len = r*0.82
     nx,ny = cx+needle_len*math.cos(math.radians(end_theta)), cy-needle_len*math.sin(math.radians(end_theta))
     svg += f'<line x1="{cx}" y1="{cy}" x2="{nx:.1f}" y2="{ny:.1f}" stroke="{P["panel_text"]}" stroke-width="2.5"/>'
     svg += f'<circle cx="{cx}" cy="{cy}" r="5" fill="{P["panel_text"]}"/>'
-    svg += f'<text x="{cx}" y="{cy-r-18:.0f}" font-family="{DISPLAY}" font-size="27" fill="{P["panel_text"]}" text-anchor="middle">{big_label}</text>'
+    svg += f'<text x="{cx}" y="{cy-r-24:.0f}" font-family="{DISPLAY}" font-size="27" fill="{P["panel_text"]}" text-anchor="middle">{big_label}</text>'
     ll, _ = wrap_tspans(label_lines, cx, 22, 11, anchor="middle")
     svg += f'<text x="{cx}" y="{cy+28}" font-family="{BODY}" font-size="11" font-weight="bold" fill="{P["panel_text2"]}" text-anchor="middle">{ll}</text>'
     return svg
@@ -128,13 +184,17 @@ def build_svg(lang):
     W = 1200
     svg_parts = [f'<rect width="{W}" height="__H__" fill="{P["bg"]}"/>']
 
+    # ---------- CINTA A CUADROS (acento superior, simbolo universal de carreras) ----------
+    svg_parts.append(checkered_ribbon(0, 0, W, 10))
+
     # ---------- HEADER ----------
-    y = 64
+    y = 74
     svg_parts.append(f'<text x="70" y="{y}" font-family="{MONO}" font-size="13" font-weight="bold" letter-spacing="1.2" fill="{P["red"]}">{esc(eyebrow)}</text>')
     y += 64
     svg_parts.append(f'<text x="66" y="{y}" font-family="{DISPLAY}" font-size="52" fill="{P["text"]}">{esc(title1)}</text>')
     y += 58
     svg_parts.append(f'<text x="66" y="{y}" font-family="{DISPLAY}" font-size="52" fill="{P["red"]}">{esc(title2)}</text>')
+    svg_parts.append(race_car_silhouette(W-330, y-152, 1.15, P["text"], opacity=0.14))
     y += 36
     sub_lines, nsub = wrap_tspans(subtitle, 70, 68, 18)
     svg_parts.append(f'<text x="70" y="{y}" font-family="{BODY}" font-size="18" fill="{P["text2"]}">{sub_lines}</text>')
@@ -272,7 +332,9 @@ def build_svg(lang):
     svg_parts.append(f'<text x="{W/2}" y="{y}" font-family="{MONO}" font-size="12" fill="{P["text2"]}" text-anchor="middle">{esc(cta2)}</text>')
     y += 24
     svg_parts.append(f'<text x="{W/2}" y="{y+18}" font-family="{MONO}" font-size="10.5" fill="#98989D" text-anchor="middle">{esc(footer)}</text>')
-    y += 50
+    y += 40
+    svg_parts.append(checkered_ribbon(0, y, W, 10))
+    y += 10
 
     H = int(y)
     svg = f'<svg viewBox="0 0 {W} {H}" xmlns="http://www.w3.org/2000/svg">' + "".join(svg_parts).replace("__H__", str(H)) + '</svg>'
